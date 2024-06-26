@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Expense</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+            margin: 0 auto;
+        }
+        label, select, input, button {
+            margin-bottom: 10px;
+        }
+        #extra_fields_container {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+        <script>
+            function updateExtraFields() {
+            const expenseType = document.getElementById('expense_type').value;
+            const participantsSelect = document.getElementById('participants');
+            const participants = Array.from(participantsSelect.selectedOptions).map(option => option.value);
+            const extraFieldsContainer = document.getElementById('extra_fields_container');
+
+            extraFieldsContainer.innerHTML = '';
+
+            if (expenseType === 'EXACT' || expenseType === 'PERCENT') {
+                participants.forEach(participant => {
+                    const label = document.createElement('label');
+                    label.textContent = `Amount for ${participant}:`;
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.name = expenseType === 'EXACT' ? 'exact_amounts' : 'percent_amounts';
+                    extraFieldsContainer.appendChild(label);
+                    extraFieldsContainer.appendChild(input);
+                    extraFieldsContainer.appendChild(document.createElement('br'));
+                });
+            }
+        }
+
+        function validateForm() {
+            const expenseType = document.getElementById('expense_type').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const extraFieldsContainer = document.getElementById('extra_fields_container');
+            const inputs = extraFieldsContainer.getElementsByTagName('input');
+            let sum = 0;
+
+            if (expenseType === 'EXACT') {
+                for (let input of inputs) {
+                    sum += parseFloat(input.value);
+                }
+                if (sum !== amount) {
+                    alert('The sum of exact amounts must equal the total amount.');
+                    return false;
+                }
+            } else if (expenseType === 'PERCENT') {
+                for (let input of inputs) {
+                    sum += parseFloat(input.value);
+                }
+                if (sum !== 100) {
+                    alert('The sum of percentages must equal 100.');
+                    return false;
+                }
+            }
+            return true;
+        }
+    </script>
+    <h1>Add Expense</h1>
+    <form method="post" onsubmit="return validateForm()">
+        {% csrf_token %}
+
+        <label for="payer">Payer:</label>
+        <select id="payer" name="payer">
+            {% for user in users %}
+                <option value="{{ user.name }}">{{ user.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="participants">Participants:</label>
+        <select id="participants" name="participants" multiple onchange="updateExtraFields()">
+            {% for user in users %}
+                <option value="{{ user.name }}">{{ user.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="amount">Amount:</label>
+        <input type="text" id="amount" name="amount">
+
+        <label for="expense_type">Expense Type:</label>
+        <select id="expense_type" name="expense_type" onchange="updateExtraFields()">
+            <option value="EQUAL">Equal</option>
+            <option value="EXACT">Exact</option>
+            <option value="PERCENT">Percent</option>
+        </select>
+
+        <div id="extra_fields_container"></div>
+
+        <button type="submit">Submit</button>
+    </form>
+    <a href="{% url 'index' %}">Back to Users</a>
+</body>
+</html>

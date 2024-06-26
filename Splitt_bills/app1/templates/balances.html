@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Balance Sheet</title>
+    <style>
+        .user-box {
+            border: 1px solid #000;
+            margin: 10px;
+            padding: 10px;
+            width:20%;
+            display:flex;
+        }
+        .user-header {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .creditor {
+            color: green;
+        }
+        .debtor {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Balance Sheet</h1>
+
+    {% for user in users %}
+    <div class="user-box">
+        <div class="user-header">Balances for {{ user.name }}</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Creditor</th>
+                    <th>Debtor</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for balance in balances %}
+                    {% if balance.creditor == user or balance.debtor == user %}
+                    {% if balance.amount != 0 %}
+                    <tr>
+                        <td>{{ balance.creditor.name }}</td>
+                        <td>{{ balance.debtor.name }}</td>
+                        <td class="{% if balance.creditor == user %}creditor{% elif balance.debtor == user %}debtor{% endif %}">
+                            {{ balance.amount }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+
+</body>
+</html>
